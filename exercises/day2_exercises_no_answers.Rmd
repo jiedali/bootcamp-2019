@@ -22,15 +22,57 @@ knitr::opts_chunk$set(echo=answers, eval=answers,
 
 Read both California energy datasets. Make sure the `datetime` variable is in an appropriate data type (i.e. not character). 
 
-```{asis}
-### Answer 
+```{r}
+generation <- read_csv(here::here("data", "ca_energy_generation.csv"))
+imports <- read_csv(here::here("data", "ca_energy_imports.csv"))
+merged_energy <- merge(generation, imports, by = "datetime")
+dim(merged_energy)
+# Reshape the data into long format
+library(reshape)
+long_merged_energy <- melt(merged_energy, id.vars = "datetime", variable.name = "source", value.name = "usage")
 ```
 
-```{asis}
-**`dplyr`**
+## Create new variables
+```{r}
+library(lubridate)
+
 ```
+
 
 ```{r}
+library(tidyverse)
+library(dplyr)
+tmp <- select(merged_energy, biogas, biomass, geothermal, solar)
+names(tmp)
+tmp <- select(merged_energy, starts_with('bio'))
+names(tmp)
+tmp <- filter(merged_energy, imports>7000)
+dim(tmp)
+## mutate creates new variables
+tmp <- mutate(long_merged_energy, log_usage = log(usage))
+head(tmp)
+```
+
+##dplyr
+```{r}
+merged_energy %>% 
+  select(contains("hydro")) %>% 
+  mutate(total_hydro = rowSums(., na.rm = T)) %>% 
+  summarize(mean_hydro = mean(total_hydro, na.rm = T))
+```
+##group by
+```{r}
+merged_energy %>% 
+  summarize(mean_small_hydro = mean(merged_energy$small_hydro, na.rm = T),
+            mean_large_hydro = mean(merged_energy$large_hydro, na.rm = T),
+            mean_biogas = mean(merged_energy$biogas, na.rm = T),
+            biomass = mean(merged_energy$biomass, na.rm = T)
+            )
+```
+
+
+
+```{asis}
 library(dplyr)
 library(lubridate)
 generation_dp <- read.csv(here::here("data/ca_energy_generation.csv"), 
@@ -52,9 +94,45 @@ library(data.table)
 library(lubridate)
 generation_dt <- fread(here::here("data/ca_energy_generation.csv"))
 imports_dt <- fread(here::here("data/ca_energy_imports.csv"))
+##import as a data frame
+generation_df <- read_csv(here::here("data", "ca_energy_generation.csv"))
+
+##Row filtering
+generation_dt[wind>4400 & mday(datetime) == 7]
+##Row filtering
+generation_dt[natural_gas<=5000 & large_hydro >2000]
+generation_dt[coal>10 & solar > median(solar)]
+##Column operations
+generation_dt[,newcol := 3*wind + solar*biogas/2]
+head(generation_dt)
+##
+generation_dt[,.(newcol = 3*wind + solar*biogas/2)]
+head(generation_dt)
+##Get rid of a column
+generation_dt[, newcol :=NULL]
+head(generation_dt)
+## Create a new column "total hydro" which is 
+generation_dt[, total_hydro:=small_hydro+large_hydro]
+head(generation_dt)
+generation_dt[, mean_nuclear:=mean(nuclear)]
+generation_dt[, mean_biogas:=mean(biogas)]
+head(generation_dt)
+## Or, generate a new table with the mean values
+generation_dt[,.(mean(nuclear), mean(biogas))]
+## Group, row filtering and column manipulation
+## find the median solar generation by hour
+generation_dt[,.(median(solar)), by= .(hour(datetime))]
+## 
+generation_dt[,day := as_date(datetime)]
+generation_dt[,log_output :=log(value)]
+generation_dt[,per_output :=output/sum(value, na.rm=T), by = day]
+head(generation_dt)
+
 
 generation_dt[,datetime := as_datetime(datetime)]
 imports_dt[,datetime := as_datetime(datetime)]
+## Create a new 
+
 ```
 
 
