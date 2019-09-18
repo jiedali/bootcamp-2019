@@ -19,15 +19,79 @@ gapminder$continent <-as.character(gapminder$continent)
 ## Print a suitable message if there is any records from 2012
 ```{r}
 check_record_year <-
-  function(df, year){
-    var <- subset(df, df$year == year)
+  function(df,year){
+    var <- df[df$year == year,]
     if (nrow(var) >0) {cat("Yes, there is any lease one record for year:",year)}
     else {cat("No, there is no record for year:",year)}
   }
-
 check_record_year(gapminder, 2002)
 check_record_year(gapminder, 2012)
 ```
+##Write a script that finds the mean life expectancy by country for countries whose population is below the mean for the dataset
+```{r}
+countries <- unique(gapminder$country)
+mean_lifeExp <- mean(gapminder$lifeExp)
+for (i in countries){
+  mean_country <- mean(gapminder$lifeExp[gapminder$country == i])
+  if (mean_country < mean_lifeExp)
+  {
+    cat("\n",i,"'s Mean life expectancy is below mean of the dataset, it is: ",mean_country)
+  }
+  else 
+  {
+    cat("\n",i,"'s Mean life expectancy is above mean of the dataset, it is: ",mean_country)
+  }
+}
+```
+##write a script that loops through the gapminder data by continent and prints out whether the mean life expectancy is smaller than 50, bertween 50 and 70, or greater than 70
+```{r}
+continents <- unique(gapminder$continent)
+for (i in continents){
+  mean_lifeExp <- mean(gapminder$lifeExp[gapminder$continent == i])
+  if (mean_lifeExp < 50){cat("\nMean Life Expectancy in",i,"is smaller than 50")}
+  else {if (mean_lifeExp>=50 | mean_lifeExp<=70){cat("\nMean Life Expectancy in",i,"is between 50 and 70")}
+        else {if (mean_lifeExp>70){cat("\nMean Life Expectancy in",i,"is greater than 70")}
+              else {cat("\nMean Life Expectancy in",i,"is outside our expected range")}}
+
+  }
+}
+
+```
+##Create a function that given a data frame will print the name of each column and the class of data it contains. Use the gapminder dataset. Hint: Use mode() or class() to get the class of the data in each column. Remember that names() or colnames() returns the name of the columns in a dataset.
+```{r}
+check_col_class<-
+  function(df){
+    col_names <- colnames(df)
+    for (i in col_names){
+      class_col <- class(df[df$i,])
+      cat("\nThe class of data for colume",i,"is:",class_col)}
+  }
+```
+
+##Create a function that given a vector will print the mean and the standard deviation of a vector, it will ##optionally also print the median. Hint: include an argument that takes a boolean (TRUE/FALSE) operator and then ##include an if statement.
+
+```{r}
+vec_stats<-
+  function(vec, include_median = TRUE){
+  vec_mean = mean(vec)
+  vec_std = sd(vec)
+  vec_median =median(vec)
+  if(include_median == TRUE){cat("\nThe mean, std and median are:", vec_mean, ",",vec_std,",",vec_median)}
+  else{cat("\nThe mean, std are:", vec_mean, ",", vec_std)}
+  
+  }
+```
+
+##Analyzing the relationship
+
+##Use what you’ve learned so far to answer the following questions using the gapminder dataset. Be sure to include some visualizations!
+
+##What is the relationship between GDP per capita and life expectancy? Does this relationship change over time? (Hint: Use the natural log of both variables.)
+```{r}
+plot(gapminder07$lifeExp ~ gapminder07$gdpPercap, ylab = 'life expenctancy', xlab = 'GDP per capita')
+```
+
+##Does the relationship between GDP per capita and life expectacy vary by continent? Make sure you divide the Americas into North and South America.
 
 
 You use the `##` to create a header. Use the header to indicate the question you are answering. After the header, in this space here, annotate your answer, telling us what you did.
